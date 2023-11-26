@@ -38,7 +38,7 @@ client.on('ready', () => {
 
 
 client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isChatInputCommand()) {
+    if (!interaction.isChatInputCommand() && !interaction.isButton()) {
         console.log("This is something unexpected, please let me know if you see this message.");
         console.log("Send me the following information: \n-------------- Start of message --------------")
         console.log(interaction)
@@ -94,6 +94,21 @@ client.on('interactionCreate', async (interaction) => {
                 }
             }
         }
+
+        if (commandObject.rolesAllowed?.length) {
+            const memberHasRole = commandObject.needAllRoles
+                ? commandObject.rolesAllowed.every(role => interaction.member.roles.cache.has(role))
+                : commandObject.rolesAllowed.some(role => interaction.member.roles.cache.has(role));
+
+            if (!memberHasRole) {
+                interaction.reply({
+                    content: 'You do not have the required role(s) to run this command.',
+                    ephemeral: true,
+                });
+                return;
+            }
+        }
+
 
         await commandObject.callback(client, interaction);
     } catch (error) {
